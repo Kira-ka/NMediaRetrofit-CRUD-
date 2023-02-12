@@ -25,6 +25,7 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
             if (text?.isNotBlank() != true) {
                 return@let
             }
+
             intent.removeExtra(Intent.EXTRA_TEXT)
             findNavController(R.id.nav_host_fragment)
                 .navigate(
