@@ -1,6 +1,8 @@
 package ru.netology.nmedia.adapter
 
 import android.view.LayoutInflater
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.PopupMenu
 import androidx.recyclerview.widget.DiffUtil
@@ -18,6 +20,7 @@ interface OnInteractionListener {
     fun onEdit(post: Post) {}
     fun onRemove(post: Post) {}
     fun onShare(post: Post) {}
+    fun save(post: Post) {}
 }
 
 class PostsAdapter(
@@ -47,6 +50,17 @@ class PostViewHolder(
             avatar.loadCircleCrop("${BuildConfig.BASE_URL}/avatars/${post.authorAvatar}")
             like.isChecked = post.likedByMe
             like.text = "${post.likes}"
+            if (!post.saveRemote) {
+                retryButton.visibility = VISIBLE
+                retryButton.setOnClickListener {
+                    onInteractionListener.save(post)
+                }
+                remoteSave.visibility = VISIBLE
+
+            } else {
+                remoteSave.visibility = GONE
+                retryButton.visibility = GONE
+            }
 
             menu.setOnClickListener {
                 PopupMenu(it.context, it).apply {

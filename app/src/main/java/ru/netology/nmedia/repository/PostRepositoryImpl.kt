@@ -17,6 +17,8 @@ import ru.netology.nmedia.errors.UnkownError
 
 class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
 
+
+
     override fun data() = postDao.getAll().map { it.map(PostEntity::toDto) }
 
 
@@ -35,8 +37,28 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
         }
     }
 
-    override suspend fun save(post: Post) {
-        TODO("Not yet implemented")
+
+
+    override suspend fun save(post: Post, id: Long?) {
+        var pos: Post
+        if (id != null){
+            pos =  post.copy(id = id, saveRemote = true)
+            postDao.insert(PostEntity.fromDto(pos))
+        }else return
+
+        try {
+            val response = PostsApi.retrofitService.save(post.copy(id = id))
+            if (!response.isSuccessful) {
+                throw ApiError(response.code(), response.message())
+                postDao.insert(PostEntity.fromDto(pos.copy(saveRemote = false)))
+            }
+        } catch (e: IOException) {
+            postDao.insert(PostEntity.fromDto(pos.copy(saveRemote = false)))
+            throw NetworkError
+        } catch (e: Exception) {
+            postDao.insert(PostEntity.fromDto(pos.copy(saveRemote = false)))
+            throw UnkownError
+        }
     }
 
     override suspend fun removeById(id: Long) {
@@ -52,6 +74,7 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
             throw UnkownError
         }
     }
+
     override suspend fun likeById(id: Long) {
         try {
             val response = PostsApi.retrofitService.likeById(id)

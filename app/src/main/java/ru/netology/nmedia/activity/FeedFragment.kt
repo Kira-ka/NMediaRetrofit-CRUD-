@@ -54,6 +54,10 @@ class FeedFragment : Fragment() {
             override fun onRemove(post: Post) {
                 viewModel.removeById(post.id)
             }
+
+            override fun save(post: Post) {
+                viewModel.save(post)
+            }
         })
         binding.list.adapter = adapter
         viewModel.state.observe(viewLifecycleOwner) { state ->
@@ -61,7 +65,7 @@ class FeedFragment : Fragment() {
             binding.refreshView.isRefreshing = state.refreshing
             if (state.error) {
                 Snackbar.make(binding.root, R.string.error_loading, Snackbar.LENGTH_LONG)
-                    .setAction(R.string.retry_loading){viewModel.loadPosts()}
+                    .setAction(R.string.retry_loading) { viewModel.loadPosts() }
                     .show()
             }
 
@@ -73,13 +77,16 @@ class FeedFragment : Fragment() {
             binding.emptyText.isVisible = state.empty
         }
 
+
+
         binding.fab.setOnClickListener {
             findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
         }
 
         binding.refreshView.setOnRefreshListener {
             if (viewModel.state.value?.loading != true)
-                viewModel.refreshPost() }
+                viewModel.refreshPost()
+        }
 
         return binding.root
     }
